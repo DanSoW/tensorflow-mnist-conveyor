@@ -20,7 +20,7 @@ from tfx.proto import trainer_pb2
 
 _pipeline_name = 'mnist_native_keras'
 
-_dir_root = os.path.join('home', 'tensorflow-mnist-conveyor')
+_dir_root = os.path.join('/home', 'tensorflow-mnist-conveyor')
 
 # Директория для MNIST данных
 _data_root = os.path.join(_dir_root, 'data')
@@ -31,7 +31,7 @@ _module_file = os.path.join(_dir_root, 'mnist_utils_native_keras.py')
 # Путь, который будет прослушиваться сервером моделей. Pusher выведет сюда обученную модель
 _serving_model_dir = os.path.join(_dir_root, 'serving_model', _pipeline_name)
 
-_tfx_root = os.path.join('home', 'tfx')
+_tfx_root = os.path.join('/home', 'tfx')
 _pipeline_root = os.path.join(_tfx_root, 'pipelines', _pipeline_name)
 
 # Путь до хранения ML-метаданных SQLite
@@ -44,6 +44,14 @@ _beam_pipeline_args = [
         # доступных процессоров во время выполнения
         '--direct_num_workers=0',
 ]
+
+print(_dir_root)
+print(_data_root)
+print(_module_file)
+print(_serving_model_dir)
+print(_tfx_root)
+print(_pipeline_root)
+print(_metadata_path)
 
 # Создание пайплайна с определёнными параметрами для классификации рукописных цифр MNIST
 def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
@@ -119,7 +127,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
             components=[
                 example_gen,
                 statistics_gen,
-                shema_gen,
+                schema_gen,
                 example_validator,
                 transform,
                 trainer,

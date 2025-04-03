@@ -4,4 +4,6 @@ __pycache__
 train.tfrecord
 test.tfrecord
 
+serving_model
+
 
