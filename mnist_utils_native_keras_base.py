@@ -24,6 +24,7 @@ def input_fn(file_pattern: List[str],
                 batch_size=batch_size, label_key=transformed_name(LABEL_KEY)),
             tf_transform_output.transformed_metadata.schema).repeat()
 
+
 # Сборка модели DNN Keras для классификации цифр из MNIST
 def build_keras_model() -> tf.keras.Model:
     model = tf.keras.Sequential()
@@ -44,5 +45,7 @@ def build_keras_model() -> tf.keras.Model:
 
     return model
 
+def preprocessing_fn(inputs):
+    return inputs
 
 
