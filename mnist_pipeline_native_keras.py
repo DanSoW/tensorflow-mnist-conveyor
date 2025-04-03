@@ -86,8 +86,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 examples=transform.outputs['transformed_examples'],
                 transform_graph=transform.outputs['transform_graph'],
                 schema=schema_gen.outputs['schema'],
-                train_args=trainer_pb2.TrainArgs(num_steps=5000),
-                eval_args=trainer_pb2.EvalArgs(num_steps=100)).with_id(component_id)
+                train_args=trainer_pb2.TrainArgs(num_steps=30000),
+                eval_args=trainer_pb2.EvalArgs(num_steps=20000)).with_id(component_id)
 
     trainer = _create_trainer(module_file, 'Trainer.mnist')
     
