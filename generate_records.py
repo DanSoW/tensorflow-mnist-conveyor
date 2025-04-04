@@ -12,8 +12,8 @@ tf.config.run_functions_eagerly(True)
 
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
-x_train   = x_train.reshape(60000, 28, 28, 1).astype('float32') / 255.0
-x_test    = x_test.reshape(10000, 28, 28, 1).astype('float32') / 255.0
+x_train   = x_train.reshape(60000, 28, 28, 1).astype('float32')
+x_test    = x_test.reshape(10000, 28, 28, 1).astype('float32')
 y_train   = y_train.reshape(60000, ).astype('int64')
 y_test    = y_test.reshape(10000, ).astype('int64')
 

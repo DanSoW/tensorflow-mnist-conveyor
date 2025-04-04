@@ -45,14 +45,12 @@ def build_keras_model() -> tf.keras.Model:
 
     return model
 
+# Обработка входных данных
 def preprocessing_fn(inputs):
     outputs = {}
 
-    #outputs[transformed_name(IMAGE_KEY)] = (
-            #tft.scale_by_min_max(inputs[IMAGE_KEY], -0.5, 0.5))
-
-    outputs[transformed_name(IMAGE_KEY)] = inputs[IMAGE_KEY]
-
+    # Нормализация входных данных
+    outputs[transformed_name(IMAGE_KEY)] = inputs[IMAGE_KEY] / 255.0
     outputs[transformed_name(LABEL_KEY)] = inputs[LABEL_KEY]
 
     return outputs
