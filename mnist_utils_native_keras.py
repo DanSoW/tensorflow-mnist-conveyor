@@ -4,6 +4,7 @@ import tensorflow_transform as tft
 from tfx.components.trainer.fn_args_utils import FnArgs
 import mnist_utils_native_keras_base as base
 
+
 # Получение функции для парсинга сериализованных данных tf.Example
 def _get_serve_tf_examples_fn(model, tf_transform_output):
     model.tft_layer = tf_transform_output.transform_features_layer()
@@ -42,11 +43,15 @@ def run_fn(fn_args: FnArgs):
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
             log_dir=fn_args.model_run_dir, update_freq='epoch')
 
+    batch_size = 32
+        
     model.fit(
             train_dataset,
-            steps_per_epoch=fn_args.train_steps,
+            epochs=32,
+            batch_size=batch_size,
+            steps_per_epoch=fn_args.train_steps // batch_size,
             validation_data=eval_dataset,
-            validation_steps=fn_args.eval_steps,
+            validation_steps=fn_args.eval_steps // batch_size,
             callbacks=[tensorboard_callback])
 
     signatures = {

@@ -16,8 +16,8 @@ def input_fn(file_pattern: List[str],
              data_accessor: DataAccessor,
              tf_transform_output: tft.TFTransformOutput,
              batch_size: int = 200) -> tf.data.Dataset:
-    #Генерация входных данных для обучение / файнтюнинга
-
+    
+    # Создание фабрики для доступа к набору данных для обучения или валидации
     return data_accessor.tf_dataset_factory(
             file_pattern,
             dataset_options.TensorFlowDatasetOptions(
