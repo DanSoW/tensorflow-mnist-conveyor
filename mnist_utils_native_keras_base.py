@@ -24,12 +24,12 @@ def make_serving_signatures(model,
     def serve_tf_examples_fn(serialized_tf_example):
         raw_feature_spec = tf_transform_output.raw_feature_spec()
         raw_feature_spec.pop(LABEL_KEY)
-        raw_features = tf.io.prase_example(serialized_tf_example, raw_feature_spec)
+        raw_features = tf.io.parse_example(serialized_tf_example, raw_feature_spec)
         transformed_features = model.tft_layer(raw_features)
 
         logging.info('serve_transformed_features = %s', transformed_features)
 
-        output = model(transformed_features)
+        outputs = model(transformed_features)
         return {'outputs': outputs}
 
     @tf.function(input_signature=[

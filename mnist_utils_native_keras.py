@@ -46,24 +46,35 @@ def run_fn(fn_args: FnArgs):
             log_dir=fn_args.model_run_dir, update_freq='epoch')
 
     print("TensorBoard logs write to: ", fn_args.model_run_dir)
-        
+       
+    print(train_dataset)
+    for raw_record in train_dataset.take(1):
+        print(raw_record)
+        print(raw_record[0]["image_floats_xf"].numpy())
+        print(raw_record[1].numpy())
+
     model.fit(
             train_dataset,
-            epochs=32,
+            epochs=1, # 32
             batch_size=batch_size,
             steps_per_epoch=fn_args.train_steps // batch_size,
             validation_data=eval_dataset,
             validation_steps=fn_args.eval_steps // batch_size,
             callbacks=[tensorboard_callback])
 
+    # tf_transform_output == examples
+
     signatures = {
             'serving_default': 
                 _get_serve_tf_examples_fn(
                     model, tf_transform_output).get_concrete_function(
-                        tf.TensorSpec(shape=[None], dtype=tf.string, name='examples'))
+                        #tf.TensorSpec(shape=[None], dtype=tf.string, name='examples')
+                        tf.TensorSpec(shape=(None, 784), dtype=tf.float32, name='inputs')
+                    )
     }
 
+    #signatures = base.make_serving_signatures(model, tf_transform_output)
     tf.saved_model.save(model, fn_args.serving_model_dir, signatures=signatures)
-
+    #tf.saved_model.save(model, fn_args.serving_model_dir, signatures=None)
 
 
