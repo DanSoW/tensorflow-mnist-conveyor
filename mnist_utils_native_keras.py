@@ -27,12 +27,14 @@ def preprocessing_fn(inputs):
 
 # TFX Trainer будет вызывать эту функцию
 def run_fn(fn_args: FnArgs):
+    batch_size = 32
+
     tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
     
     train_dataset = base.input_fn(fn_args.train_files, fn_args.data_accessor,
-                                  tf_transform_output, 40)
+                                  tf_transform_output, batch_size)
     eval_dataset = base.input_fn(fn_args.eval_files, fn_args.data_accessor,
-                                 tf_transform_output, 40)
+                                 tf_transform_output, batch_size)
 
     mirrored_strategy = tf.distribute.MirroredStrategy()
 
@@ -43,7 +45,7 @@ def run_fn(fn_args: FnArgs):
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
             log_dir=fn_args.model_run_dir, update_freq='epoch')
 
-    batch_size = 32
+    print("TensorBoard logs write to: ", fn_args.model_run_dir)
         
     model.fit(
             train_dataset,
@@ -62,5 +64,6 @@ def run_fn(fn_args: FnArgs):
     }
 
     tf.saved_model.save(model, fn_args.serving_model_dir, signatures=signatures)
+
 
 

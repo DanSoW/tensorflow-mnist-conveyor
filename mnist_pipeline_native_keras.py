@@ -61,6 +61,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     # Импорт данных в конвейер
     example_gen = ImportExampleGen(input_base=data_root)
 
+    print(example_gen.outputs['examples'])
+
     # Вычисляет статистику по данным для визуализации и проверки на примере
     statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
 
@@ -90,7 +92,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 eval_args=trainer_pb2.EvalArgs(num_steps=10000)).with_id(component_id)
 
     trainer = _create_trainer(module_file, 'Trainer.mnist')
-    
+    print(transform.outputs['transformed_examples'])
+
     # Конфигурация для оценки качества модели-кандидата
     eval_config = tfma.EvalConfig(
             model_specs=[tfma.ModelSpec(label_key='image_class')],
@@ -142,6 +145,17 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
 
 if __name__ == '__main__':
     absl.logging.set_verbosity(absl.logging.INFO)
+
+    _create_pipeline(
+            pipeline_name=_pipeline_name,
+            pipeline_root=_pipeline_root,
+            data_root=_data_root,
+            module_file=_module_file,
+            serving_model_dir=_serving_model_dir,
+            metadata_path=_metadata_path,
+            beam_pipeline_args=_beam_pipeline_args)
+
+    exit(0)
     BeamDagRunner().run(
             _create_pipeline(
                 pipeline_name=_pipeline_name,
