@@ -29,15 +29,12 @@ utils.convert_tfrecord(x_train, y_train, out_path_train)
 
 # Функция для тестирования выходных данных из tfrecord-файла
 @tf.function
-def data_gen_print(filename):
+def data_gen_output(filename):
     raw_dataset = tf.data.TFRecordDataset(filenames=[filename])
 
     for raw_record in raw_dataset.take(1):
-        example = tf.train.Example()
-        example.ParseFromString(raw_record.numpy())
-        print(raw_record)
-        print(example)
-        return utils.convert_back(raw_record)
+        item = utils.convert_back(raw_record)
+        return (item[0].shape, item[1].shape)
 
-#data_gen_print(out_path_train)
+#data_gen_output(out_path_train)
 
