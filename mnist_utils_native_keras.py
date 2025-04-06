@@ -67,7 +67,7 @@ def run_fn(fn_args: FnArgs):
     # Запускаем процесс обучения модели
     model.fit(
             train_dataset,
-            epochs=32
+            epochs=32,
             batch_size=batch_size,
             steps_per_epoch=fn_args.train_steps // batch_size,
             validation_data=eval_dataset,
