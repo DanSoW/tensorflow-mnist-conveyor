@@ -13,42 +13,6 @@ LABEL_KEY = 'image_class'
 def transformed_name(key):
     return key + '_xf'
 
-def make_serving_signatures(model,
-                            tf_transform_output: tft.TFTransformOutput):
-
-    model.tft_layer = tf_transform_output.transform_features_layer()
-
-    @tf.function(input_signature=[
-        tf.TensorSpec(shape=[None], dtype=tf.string, name='examples')
-    ])
-    def serve_tf_examples_fn(serialized_tf_example):
-        raw_feature_spec = tf_transform_output.raw_feature_spec()
-        raw_feature_spec.pop(LABEL_KEY)
-        raw_features = tf.io.parse_example(serialized_tf_example, raw_feature_spec)
-        transformed_features = model.tft_layer(raw_features)
-
-        logging.info('serve_transformed_features = %s', transformed_features)
-
-        outputs = model(transformed_features)
-        return {'outputs': outputs}
-
-    @tf.function(input_signature=[
-        tf.TensorSpec(shape=[None], dtype=tf.string, name='examples')
-    ])
-    def transform_features_fn(serialized_tf_example):
-        raw_feature_spec = tf_transform_output.raw_feature_spec()
-        raw_features = tf.io.parse_example(serialized_tf_example, raw_feature_spec)
-        transformed_features = model.tft_layer(raw_features)
-
-        logging.info('eval_transformed_features = %s', transformed_features)
-
-        return transformed_features
-
-    return {
-        'serving_default': serve_tf_examples_fn,
-        'transform_features': transform_features_fn
-    }
-
 def input_fn(file_pattern: List[str],
              data_accessor: DataAccessor,
              tf_transform_output: tft.TFTransformOutput,
@@ -66,7 +30,7 @@ def input_fn(file_pattern: List[str],
 def build_keras_model() -> tf.keras.Model:
     model = tf.keras.Sequential()
 
-    model.add(tf.keras.layers.InputLayer(input_shape=(784, ), name=transformed_name(IMAGE_KEY)))
+    model.add(tf.keras.layers.InputLayer(shape=(784, ), dtype=tf.float32, name=transformed_name(IMAGE_KEY)))
     model.add(tf.keras.layers.Dense(64, activation='relu'))
     model.add(tf.keras.layers.Dropout(0.2))
     model.add(tf.keras.layers.Dense(64, activation='relu'))
@@ -89,6 +53,10 @@ def preprocessing_fn(inputs):
     # Нормализация входных данных
     outputs[transformed_name(IMAGE_KEY)] = inputs[IMAGE_KEY] / 255.0
     outputs[transformed_name(LABEL_KEY)] = inputs[LABEL_KEY]
+
+    print()
+    print("OUTPUTS: ", outputs)
+    print()
 
     return outputs
     

@@ -75,12 +75,14 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
             statistics=statistics_gen.outputs['statistics'],
             schema=schema_gen.outputs['schema'])
 
+    #print(schema_gen.outputs["schema"])
+
     # Преобразование данных
     transform = Transform(
             examples=example_gen.outputs['examples'],
             schema=schema_gen.outputs['schema'],
             module_file=module_file)
-    
+
     # Создание компонента Trainer
     def _create_trainer(module_file, component_id):
         return Trainer(
@@ -96,7 +98,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
 
     # Конфигурация для оценки качества модели-кандидата
     eval_config = tfma.EvalConfig(
-            model_specs=[tfma.ModelSpec(label_key='image_class')],
+            model_specs=[tfma.ModelSpec(label_key='image_class_xf')],
             slicing_specs=[tfma.SlicingSpec()],
             metrics_specs=[
                 tfma.MetricsSpec(metrics=[
@@ -110,7 +112,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
 
     # Использует TFMA для вычисления статистики оценки характеристик модели.
     evaluator = Evaluator(
-            examples=example_gen.outputs['examples'],
+            #examples=example_gen.outputs['examples'],
+            examples=transform.outputs['transformed_examples'],
             model=trainer.outputs['model'],
             eval_config=eval_config).with_id('Evaluator.mnist')
 
@@ -146,14 +149,14 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
 if __name__ == '__main__':
     absl.logging.set_verbosity(absl.logging.INFO)
 
-   # _create_pipeline(
+    #_create_pipeline(
            # pipeline_name=_pipeline_name,
-          #  pipeline_root=_pipeline_root,
-         #   data_root=_data_root,
-        #    module_file=_module_file,
-       #     serving_model_dir=_serving_model_dir,
-      #      metadata_path=_metadata_path,
-     #       beam_pipeline_args=_beam_pipeline_args)
+           # pipeline_root=_pipeline_root,
+           # data_root=_data_root,
+           # module_file=_module_file,
+           # serving_model_dir=_serving_model_dir,
+           # metadata_path=_metadata_path,
+           # beam_pipeline_args=_beam_pipeline_args)
 
     #exit(0)
     BeamDagRunner().run(
