@@ -58,15 +58,13 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                      module_file: str, serving_model_dir: str, metadata_path: str,
                      beam_pipeline_args: List[str], accuracy_threshold: float = 0.8) -> pipeline.Pipeline:
     
-    # Импорт данных в конвейер
+    # Импорт данных в конвейер машинного обучения
     example_gen = ImportExampleGen(input_base=data_root)
-
-    #print(example_gen.outputs['examples'])
 
     # Вычисляет статистику по данным для визуализации и проверки на примере
     statistics_gen = StatisticsGen(examples=example_gen.outputs['examples'])
 
-    # Генерация схема на основе файлов статистики
+    # Генерация схемы на основе файлов статистики
     schema_gen = SchemaGen(
             statistics=statistics_gen.outputs['statistics'], infer_feature_shape=True)
 
@@ -75,15 +73,13 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
             statistics=statistics_gen.outputs['statistics'],
             schema=schema_gen.outputs['schema'])
 
-    #print(schema_gen.outputs["schema"])
-
-    # Преобразование данных
+    # Преобразование данных (нормализация признаков)
     transform = Transform(
             examples=example_gen.outputs['examples'],
             schema=schema_gen.outputs['schema'],
             module_file=module_file)
 
-    # Создание компонента Trainer
+    # Функция для создания компонента Trainer
     def _create_trainer(module_file, component_id):
         return Trainer(
                 module_file=module_file,
@@ -93,9 +89,9 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 train_args=trainer_pb2.TrainArgs(num_steps=50000),
                 eval_args=trainer_pb2.EvalArgs(num_steps=10000)).with_id(component_id)
 
+    # Создание компонента Trainer
     trainer = _create_trainer(module_file, 'Trainer.mnist')
-    #print(transform.outputs['transformed_examples'])
-
+    
     # Конфигурация для оценки качества модели-кандидата
     eval_config = tfma.EvalConfig(
             model_specs=[tfma.ModelSpec(label_key='image_class_xf')],
@@ -110,7 +106,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 ])
             ])
 
-    # Использует TFMA для вычисления статистики оценки характеристик модели.
+    # Использует TFMA для вычисления статистики оценки характеристик модели
     evaluator = Evaluator(
             #examples=example_gen.outputs['examples'],
             examples=transform.outputs['transformed_examples'],
@@ -118,7 +114,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
             eval_config=eval_config).with_id('Evaluator.mnist')
 
     # Проверяет, прошла ли модель этапы проверки, и отправляет модель
-    # в пункт назначения файла, если проверка пройдена.
+    # в пункт назначения, если проверка пройдена успешно
     pusher = Pusher(
             model=trainer.outputs['model'],
             model_blessing=evaluator.outputs['blessing'],
@@ -126,7 +122,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 filesystem=pusher_pb2.PushDestination.Filesystem(
                     base_directory=serving_model_dir))).with_id('Pusher.mnist')
 
-    
+    # Сборка всего пайплайна и возвращение его из функции
     return pipeline.Pipeline(
             pipeline_name=pipeline_name,
             pipeline_root=pipeline_root,
@@ -148,17 +144,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
 
 if __name__ == '__main__':
     absl.logging.set_verbosity(absl.logging.INFO)
-
-    #_create_pipeline(
-           # pipeline_name=_pipeline_name,
-           # pipeline_root=_pipeline_root,
-           # data_root=_data_root,
-           # module_file=_module_file,
-           # serving_model_dir=_serving_model_dir,
-           # metadata_path=_metadata_path,
-           # beam_pipeline_args=_beam_pipeline_args)
-
-    #exit(0)
+    
+    # Передача пайплайна в оркестратор
     BeamDagRunner().run(
             _create_pipeline(
                 pipeline_name=_pipeline_name,
