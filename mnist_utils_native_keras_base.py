@@ -13,6 +13,7 @@ LABEL_KEY = 'image_class'
 def transformed_name(key):
     return key + '_xf'
 
+# Определение источника входных данных для обучения модели
 def input_fn(file_pattern: List[str],
              data_accessor: DataAccessor,
              tf_transform_output: tft.TFTransformOutput,
@@ -26,7 +27,7 @@ def input_fn(file_pattern: List[str],
             tf_transform_output.transformed_metadata.schema).repeat()
 
 
-# Сборка модели DNN Keras для классификации цифр из MNIST
+# Сборка модели нейронной сети для классификации цифр из MNIST
 def build_keras_model() -> tf.keras.Model:
     model = tf.keras.Sequential()
 
@@ -37,26 +38,24 @@ def build_keras_model() -> tf.keras.Model:
     model.add(tf.keras.layers.Dropout(0.2))
     model.add(tf.keras.layers.Dense(10))
     
+    # Компиляция модели
     model.compile(
             loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
             optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.0015),
             metrics=['sparse_categorical_accuracy'])
       
+    # Суммаризация
     model.summary(print_fn=absl.logging.info)
 
     return model
 
-# Обработка входных данных
+# Обработка входных данных (используется в Transform)
 def preprocessing_fn(inputs):
     outputs = {}
 
-    # Нормализация входных данных
+    # Нормализация значений признаков
     outputs[transformed_name(IMAGE_KEY)] = inputs[IMAGE_KEY] / 255.0
     outputs[transformed_name(LABEL_KEY)] = inputs[LABEL_KEY]
-
-    print()
-    print("OUTPUTS: ", outputs)
-    print()
 
     return outputs
     
