@@ -5,7 +5,6 @@ import tensorflow as tf
 import tensorflow_transform as tft
 from tfx.components.trainer.fn_args_utils import DataAccessor
 from tfx_bsl.tfxio import dataset_options
-from absl import logging
 
 IMAGE_KEY = 'image_floats'
 LABEL_KEY = 'image_class'

@@ -31,21 +31,25 @@ def preprocessing_fn(inputs):
 
 # TFX Trainer будет вызывать эту функцию
 def run_fn(fn_args: FnArgs):
+    # Определяем размер пакета
     batch_size = 32
 
     tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
     
+    # Определяем набор данных для обучения и валидации
     train_dataset = base.input_fn(fn_args.train_files, fn_args.data_accessor,
                                   tf_transform_output, batch_size)
     eval_dataset = base.input_fn(fn_args.eval_files, fn_args.data_accessor,
                                  tf_transform_output, batch_size)
 
+    # Определяем стратегию распределённого обучения
     mirrored_strategy = tf.distribute.MirroredStrategy()
 
+    # Генерируем модель в контексте выбранной стратегии
     with mirrored_strategy.scope():
         model = base.build_keras_model()
 
-    # Пишем логи по пути
+    # Пишем логи по пути для tensorboard
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
             log_dir=fn_args.model_run_dir, update_freq='epoch')
 
@@ -60,9 +64,10 @@ def run_fn(fn_args: FnArgs):
     #serving_model_dir = "/".join(list(fn_args.serving_model_dir.split('/')[0:-1]))
     #serving_model_dir = fn_args.serving_model_dir
 
+    # Запускаем процесс обучения модели
     model.fit(
             train_dataset,
-            epochs=1, # 32
+            epochs=32
             batch_size=batch_size,
             steps_per_epoch=fn_args.train_steps // batch_size,
             validation_data=eval_dataset,
@@ -77,7 +82,7 @@ def run_fn(fn_args: FnArgs):
     #                )
     #}
 
-    
+    # Экспорт модели
     model.export(fn_args.serving_model_dir)
     #tf.saved_model.save(model, fn_args.serving_model_dir, signatures=signatures)
 
