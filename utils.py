@@ -1,38 +1,40 @@
 import tensorflow as tf
 
-# Функции обёртки для формирования данных для элементов форм
+# Схема для хранения меток из набора данных
 def wrap_int64(val):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=[val]))
 
-def wrap_bytes(val):
-    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[val]))
-
+# Схема для хранения float-значений признаков
 def wrap_float(val):
     return tf.train.Feature(float_list=tf.train.FloatList(value=val))
 
-# Запись данных в файл record
+# Запись набора данных в tfrecord-файл
 @tf.function
 def convert_tfrecord(images, labels, out_path):
+    # Открытие потока для записи в tfrecord-файл
     with tf.io.TFRecordWriter(out_path) as writer:
+        # Упаковка элементов набора данных и проход по нему через цикл
         for image, label in zip(images, labels):
+            # Изменение размера тензора (процедура flatten)
             img = image.reshape((784, ))
 
-            # Определение формата записи в TFRecord
+            # Определение элемента одной записи
             mnist = {
                 'image_class': wrap_int64(int(label)),
                 'image_floats': wrap_float(img)
             }
 
+            # Определение данных и формирование элемента прототипа (Example)
             feature = tf.train.Features(feature=mnist)
             example = tf.train.Example(features=feature)
 
-            # Сериализация данных в строку
+            # Сериализация прототипа в строку
             serialized = example.SerializeToString()
 
-            # Запись элемента в TFRecord
+            # Запись элемента в tfrecord-файл (построчно)
             writer.write(serialized)
 
-# Парсинз из строки TFRecord
+# Парсинг одного элемента из tfrecord-файла
 @tf.function
 def convert_back(serialized):
     # Форма для парсинга сериализованной строки
@@ -45,11 +47,10 @@ def convert_back(serialized):
     parsed_example = tf.io.parse_single_example(serialized=serialized, features=feature)
 
     image = parsed_example['image_floats']
-    img = tf.reshape(image, shape=[28, 28, 1])
-    
+    # image = tf.reshape(image, shape=[28, 28, 1])
     label = parsed_example['image_class']
 
-    return img, label
+    return image, label
 
 
 
